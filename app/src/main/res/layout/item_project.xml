@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_workspace_card"
+    android:elevation="1dp"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- TAG -->
+    <TextView
+        android:id="@+id/tvItemTag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/tag_background"
+        android:paddingStart="10dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="4dp"
+        android:text="User Interface"
+        android:textColor="#694293"
+        android:textSize="10sp"
+        android:textStyle="bold" />
+
+    <!-- PROJECT NAME -->
+    <TextView
+        android:id="@+id/tvItemName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Service Page Website"
+        android:textColor="#182134"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- DESCRIPTION (MAX 2 LINES) -->
+    <TextView
+        android:id="@+id/tvItemDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:lineSpacingExtra="2dp"
+        android:maxLines="2"
+        android:text="Project description goes here..."
+        android:textColor="#91A2BB"
+        android:textSize="12sp" />
+
+    <!-- PROGRESS ROW -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvItemTaskFraction"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="4/12 tasks"
+            android:textColor="#7C91AF"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tvItemPercentage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="33%"
+            android:textColor="#7C91AF"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- PROGRESS BAR -->
+    <ProgressBar
+        android:id="@+id/pbItemProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginTop="6dp"
+        android:max="100"
+        android:progress="33"
+        android:progressBackgroundTint="#ECEEF3"
+        android:progressTint="#3099F3" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="10dp"
+        android:background="#EDF1F7" />
+
+    <!-- METADATA FOOTER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvItemAttachments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📎 4 Attachments"
+            android:textColor="#7B91AE"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/tvItemComments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:text="💬 3 Comments"
+            android:textColor="#7B91AE"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+</LinearLayout>
