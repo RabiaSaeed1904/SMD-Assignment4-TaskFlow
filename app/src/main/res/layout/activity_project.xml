@@ -125,7 +125,7 @@
         app:tabGravity="fill"
         app:tabIndicatorColor="#3099F3"
         app:tabIndicatorHeight="3dp"
-        app:tabMode="auto"
+        app:tabMode="scrollable"
         app:tabRippleColor="@null"
         app:tabSelectedTextColor="#3099F3"
         app:tabTextAppearance="@android:style/TextAppearance.Small"
