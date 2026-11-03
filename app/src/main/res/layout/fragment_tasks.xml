@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F8FA"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingTop="12dp"
+    android:paddingEnd="16dp">
+
+    <!-- SEARCH -->
+    <EditText
+        android:id="@+id/etSearchTasks"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:background="@drawable/bg_search_field"
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="10dp"
+        android:hint="Search tasks in project..."
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:singleLine="true"
+        android:textColor="#202C40"
+        android:textSize="12sp" />
+
+    <!-- FILTER SPINNERS ROW -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Spinner
+                android:id="@+id/spinnerStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_search_field" />
+
+            <Spinner
+                android:id="@+id/spinnerPriority"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_search_field" />
+
+            <Spinner
+                android:id="@+id/spinnerDate"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_search_field" />
+
+            <Spinner
+                android:id="@+id/spinnerSort"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_search_field" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- COUNT + RESET FILTERS -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvTaskCountStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Showing 12 of 12 tasks"
+            android:textColor="#91A1BB"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/btnResetFilters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="6dp"
+            android:text="Reset filters"
+            android:textColor="#3099F3"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- BUILT-IN LISTVIEW -->
+    <ListView
+        android:id="@+id/lvTasks"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="10dp"
+        android:overScrollMode="never"
+        android:scrollbars="vertical" />
+
+    <!-- EMPTY STATE -->
+    <LinearLayout
+        android:id="@+id/layoutTasksEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvTasksEmptyMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No tasks yet"
+            android:textColor="#91A1BB"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnTasksEmptyAction"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#3099F3"
+            android:text="+ Add Task"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- ADD TASK BUTTON -->
+    <Button
+        android:id="@+id/btnTasksAddTask"
+        android:layout_width="match_parent"
+        android:layout_height="46dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="12dp"
+        android:backgroundTint="#3099F3"
+        android:text="+ Add Task"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+</LinearLayout>
