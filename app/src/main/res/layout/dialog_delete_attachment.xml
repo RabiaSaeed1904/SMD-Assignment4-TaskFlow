@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tvDeletePrompt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Type file name to confirm deletion:"
+        android:textColor="#202C40"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/etConfirmAttachmentName"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_search_field"
+        android:hint="Type attachment name..."
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:singleLine="true"
+        android:textSize="13sp" />
+
+</LinearLayout>
