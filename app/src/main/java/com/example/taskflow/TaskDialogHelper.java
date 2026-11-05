@@ -37,7 +37,6 @@ public class TaskDialogHelper {
 
         final long[] selectedDueDate = {0L};
 
-        // Requirement 4.c: Live 0/500 character counter
         etDesc.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -46,17 +45,16 @@ public class TaskDialogHelper {
             @Override public void afterTextChanged(Editable s) {}
         });
 
-        // Priority spinner (Default: Normal)
-        ArrayAdapter<String> pAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item,
+        // Updated to use the custom item_spinner layout
+        ArrayAdapter<String> pAdapter = new ArrayAdapter<>(context, R.layout.item_spinner,
                 new String[]{Task.PRIORITY_NORMAL, Task.PRIORITY_HIGH, Task.PRIORITY_LOW});
         spPriority.setAdapter(pAdapter);
 
-        // Status spinner (Default: To do)
-        ArrayAdapter<String> sAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_dropdown_item,
+        // Updated to use the custom item_spinner layout
+        ArrayAdapter<String> sAdapter = new ArrayAdapter<>(context, R.layout.item_spinner,
                 new String[]{Task.STATUS_TODO, Task.STATUS_IN_PROGRESS, Task.STATUS_DONE});
         spStatus.setAdapter(sAdapter);
 
-        // Date selection (Requirement 4.d: DatePickerDialog and clear date action)
         btnPickDate.setOnClickListener(v -> {
             Calendar now = Calendar.getInstance();
             DatePickerDialog dpd = new DatePickerDialog(context, (view, year, month, dayOfMonth) -> {

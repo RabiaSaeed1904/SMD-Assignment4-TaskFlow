@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="4dp"
-        android:text="Hi, Hari"
+        android:text="Hi, Rabia"
         android:textColor="#172033"
         android:textSize="21sp"
         android:textStyle="bold" />

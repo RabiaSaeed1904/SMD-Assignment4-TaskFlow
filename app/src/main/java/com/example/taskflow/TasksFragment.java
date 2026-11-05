@@ -40,7 +40,6 @@ public class TasksFragment extends Fragment {
     private final List<Task> filteredTasks = new ArrayList<>();
     private TaskAdapter adapter;
 
-    // Requirement 5.a: Exact filter choices
     private final String[] statusChoices = {"All statuses", "To do", "In progress", "Done"};
     private final String[] priorityChoices = {"All priorities", "High", "Normal", "Low"};
     private final String[] dateChoices = {"All dates", "Today", "Overdue", "No due date"};
@@ -80,10 +79,11 @@ public class TasksFragment extends Fragment {
     }
 
     private void setupSpinners() {
-        spStatus.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, statusChoices));
-        spPriority.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, priorityChoices));
-        spDate.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, dateChoices));
-        spSort.setAdapter(new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortChoices));
+        // Updated to use the custom item_spinner layout
+        spStatus.setAdapter(new ArrayAdapter<>(requireContext(), R.layout.item_spinner, statusChoices));
+        spPriority.setAdapter(new ArrayAdapter<>(requireContext(), R.layout.item_spinner, priorityChoices));
+        spDate.setAdapter(new ArrayAdapter<>(requireContext(), R.layout.item_spinner, dateChoices));
+        spSort.setAdapter(new ArrayAdapter<>(requireContext(), R.layout.item_spinner, sortChoices));
 
         AdapterView.OnItemSelectedListener filterListener = new AdapterView.OnItemSelectedListener() {
             @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) { applyFilters(); }
@@ -126,7 +126,6 @@ public class TasksFragment extends Fragment {
         applyFilters();
     }
 
-    // Called by ProjectActivity when tapping a breakdown card on the Overview tab
     public void applyDirectFilters(String targetStatus, String targetDate) {
         if (targetStatus != null) {
             for (int i = 0; i < statusChoices.length; i++) {
@@ -163,21 +162,17 @@ public class TasksFragment extends Fragment {
         int sortPos = spSort.getSelectedItemPosition();
 
         for (Task t : all) {
-            // Search
             if (!query.isEmpty() && !t.getDescription().toLowerCase(Locale.ROOT).contains(query)) {
                 continue;
             }
-            // Status
             if (statusPos == 1 && !Task.STATUS_TODO.equals(t.getStatus())) continue;
             if (statusPos == 2 && !Task.STATUS_IN_PROGRESS.equals(t.getStatus())) continue;
             if (statusPos == 3 && !Task.STATUS_DONE.equals(t.getStatus())) continue;
 
-            // Priority
             if (priorityPos == 1 && !Task.PRIORITY_HIGH.equals(t.getPriority())) continue;
             if (priorityPos == 2 && !Task.PRIORITY_NORMAL.equals(t.getPriority())) continue;
             if (priorityPos == 3 && !Task.PRIORITY_LOW.equals(t.getPriority())) continue;
 
-            // Date
             if (datePos == 1 && !t.isDueToday()) continue;
             if (datePos == 2 && !t.isOverdue()) continue;
             if (datePos == 3 && t.getDueDateMillis() > 0L) continue;
@@ -185,17 +180,16 @@ public class TasksFragment extends Fragment {
             filteredTasks.add(t);
         }
 
-        // Sorting (Requirement 5.b: Default is Due date ascending)
         Collections.sort(filteredTasks, (t1, t2) -> {
             switch (sortPos) {
-                case 1: // Due date descending
+                case 1:
                     return Long.compare(t2.getDueDateMillis() == 0 ? Long.MIN_VALUE : t2.getDueDateMillis(),
                             t1.getDueDateMillis() == 0 ? Long.MIN_VALUE : t1.getDueDateMillis());
-                case 2: // Priority
+                case 2:
                     return Integer.compare(getPriorityRank(t2.getPriority()), getPriorityRank(t1.getPriority()));
-                case 3: // Description
+                case 3:
                     return t1.getDescription().compareToIgnoreCase(t2.getDescription());
-                default: // Due date ascending
+                default:
                     long d1 = t1.getDueDateMillis() == 0 ? Long.MAX_VALUE : t1.getDueDateMillis();
                     long d2 = t2.getDueDateMillis() == 0 ? Long.MAX_VALUE : t2.getDueDateMillis();
                     return Long.compare(d1, d2);
@@ -205,7 +199,6 @@ public class TasksFragment extends Fragment {
         adapter.notifyDataSetChanged();
         tvStatusCount.setText("Showing " + filteredTasks.size() + " of " + all.size() + " tasks");
 
-        // Dual Empty States (Requirement 5.c)
         if (filteredTasks.isEmpty()) {
             lvTasks.setVisibility(View.GONE);
             layoutEmpty.setVisibility(View.VISIBLE);

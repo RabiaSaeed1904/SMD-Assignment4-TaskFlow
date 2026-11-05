@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate; // Make sure to add this import
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -12,6 +13,9 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Force Light Mode to fix color contrast issues
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
@@ -28,11 +32,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void openHomeScreen() {
-        Intent intent = new Intent(
-                SplashActivity.this,
-                HomeActivity.class
-        );
-
+        Intent intent = new Intent(SplashActivity.this, HomeActivity.class);
         startActivity(intent);
         finish();
     }
