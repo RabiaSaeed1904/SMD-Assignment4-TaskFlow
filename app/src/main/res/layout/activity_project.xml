@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F8FA"
+    android:orientation="vertical">
+
+    <!-- TOP HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Back"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="←"
+            android:textColor="#202C40"
+            android:textSize="24sp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/avatar_red"
+            android:gravity="center"
+            android:text="JD"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="-6dp"
+            android:background="@drawable/avatar_blue"
+            android:gravity="center"
+            android:text="AS"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginStart="-6dp"
+            android:background="@drawable/avatar_purple"
+            android:gravity="center"
+            android:text="MK"
+            android:textColor="#FFFFFF"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnInvite"
+            android:layout_width="64dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#3099F3"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text="Invite"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- PROJECT INFO HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:id="@+id/tvHeaderProjectTag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/tag_background"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="4dp"
+            android:text="User Interface"
+            android:textColor="#694293"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvHeaderProjectName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Service Page Website"
+            android:textColor="#202C40"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- MATERIAL TABLAYOUT -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="#F7F8FA"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="#3099F3"
+        app:tabIndicatorHeight="3dp"
+        app:tabMode="auto"
+        app:tabRippleColor="@null"
+        app:tabSelectedTextColor="#3099F3"
+        app:tabTextAppearance="@android:style/TextAppearance.Small"
+        app:tabTextColor="#58677D" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DFE6EF" />
+
+    <!-- FRAGMENT CONTAINER -->
+    <FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#EAF3F4">
+
+    <!-- Project management illustration -->
+    <ImageView
+        android:id="@+id/ivSplashImage"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="55dp"
+        android:layout_marginEnd="24dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="Project management illustration"
+        android:scaleType="centerInside"
+        android:src="@drawable/taskflow_splash"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Assignment splash text -->
+    <TextView
+        android:id="@+id/tvSplashMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="42dp"
+        android:layout_marginTop="34dp"
+        android:layout_marginEnd="42dp"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:text="Management of a project will be easier if it is done well"
+        android:textColor="#242433"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ivSplashImage" />
+
+    <!-- Get Started -->
+    <Button
+        android:id="@+id/btnGetStarted"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="38dp"
+        android:backgroundTint="#18182A"
+        android:elevation="0dp"
+        android:text="Get Started"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
