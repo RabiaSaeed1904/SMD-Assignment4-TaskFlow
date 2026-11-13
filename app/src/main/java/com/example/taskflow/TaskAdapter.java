@@ -1,95 +1,147 @@
 package com.example.taskflow;
 
-import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class TaskAdapter extends BaseAdapter {
+public class TaskAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public interface OnTaskStatusChangedListener {
-        void onStatusChanged();
+    private final List<TaskListItem> items = new ArrayList<>();
+
+    public interface OnTaskInteractListener {
+        void onTaskChecked(Task task, boolean isChecked);
     }
 
-    private final Context context;
-    private final List<Task> tasks;
-    private final LayoutInflater inflater;
-    private final OnTaskStatusChangedListener listener;
+    private final OnTaskInteractListener listener;
 
-    public TaskAdapter(Context context, List<Task> tasks, OnTaskStatusChangedListener listener) {
-        this.context = context;
-        this.tasks = tasks;
+    public TaskAdapter(OnTaskInteractListener listener) {
         this.listener = listener;
-        this.inflater = LayoutInflater.from(context);
     }
 
-    @Override public int getCount() { return tasks.size(); }
-    @Override public Task getItem(int position) { return tasks.get(position); }
-    @Override public long getItemId(int position) { return position; }
+    public void submitList(List<TaskListItem> newItems) {
+        this.items.clear();
+        this.items.addAll(newItems);
+        notifyDataSetChanged();
+    }
+
+    public List<TaskListItem> getItems() {
+        return items;
+    }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = inflater.inflate(R.layout.item_task, parent, false);
-        }
+    public int getItemViewType(int position) {
+        return items.get(position).getType();
+    }
 
-        CheckBox cbCompleted = convertView.findViewById(R.id.cbTaskCompleted);
-        TextView tvDesc = convertView.findViewById(R.id.tvTaskDescription);
-        TextView tvMeta = convertView.findViewById(R.id.tvTaskMetadata);
-
-        Task task = getItem(position);
-
-        tvDesc.setText(task.getDescription());
-
-        // Remove listener temporarily to prevent firing during recycle
-        cbCompleted.setOnCheckedChangeListener(null);
-        cbCompleted.setChecked(task.isDone());
-
-        // Apply strike-through for completed tasks
-        if (task.isDone()) {
-            tvDesc.setPaintFlags(tvDesc.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            tvDesc.setTextColor(0xFF91A1BB);
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        if (viewType == TaskListItem.TYPE_HEADER) {
+            return new HeaderViewHolder(inflater.inflate(R.layout.item_task_header, parent, false));
         } else {
-            tvDesc.setPaintFlags(tvDesc.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
-            tvDesc.setTextColor(0xFF202C40);
+            return new TaskViewHolder(inflater.inflate(R.layout.item_task, parent, false));
         }
+    }
 
-        // Format metadata string
-        StringBuilder meta = new StringBuilder();
-        meta.append(task.getStatus()).append(" • ").append(task.getPriority()).append(" • ");
-
-        if (task.getDueDateMillis() <= 0L) {
-            meta.append("No due date");
-        } else if (task.isDueToday()) {
-            meta.append("Due today");
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (getItemViewType(position) == TaskListItem.TYPE_HEADER) {
+            ((HeaderViewHolder) holder).bind(((TaskListItem.Header) items.get(position)));
         } else {
-            String dateStr = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(new Date(task.getDueDateMillis()));
-            meta.append(dateStr);
+            ((TaskViewHolder) holder).bind(((TaskListItem.TaskItem) items.get(position)).getTask());
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return items.size();
+    }
+
+    class HeaderViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTitle, tvCount;
+
+        HeaderViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvTitle = itemView.findViewById(R.id.tvHeaderTitle);
+            tvCount = itemView.findViewById(R.id.tvHeaderCount);
         }
 
-        if (task.isOverdue()) {
-            meta.append(" (OVERDUE)");
-            tvMeta.setTextColor(0xFFE67C7C);
-        } else {
-            tvMeta.setTextColor(0xFF91A1BB);
+        void bind(TaskListItem.Header header) {
+            tvTitle.setText(header.getTitle());
+            tvCount.setText(String.valueOf(header.getCount()));
+
+            String colorHex = "#202C40";
+            if (header.getTitle().equals("Overdue")) colorHex = "#E74C3C";
+            else if (header.getTitle().equals("In Progress")) colorHex = "#2ECC71";
+            else if (header.getTitle().equals("To Do")) colorHex = "#3498DB";
+            else if (header.getTitle().equals("Done")) colorHex = "#27AE60";
+
+            tvTitle.setTextColor(Color.parseColor(colorHex));
+            tvCount.setTextColor(Color.parseColor(colorHex));
+        }
+    }
+
+    class TaskViewHolder extends RecyclerView.ViewHolder {
+        CheckBox cbDone;
+        TextView tvDesc, tvDetails;
+
+        TaskViewHolder(@NonNull View itemView) {
+            super(itemView);
+            cbDone = itemView.findViewById(R.id.cbTaskDone);
+            tvDesc = itemView.findViewById(R.id.tvTaskDesc);
+            tvDetails = itemView.findViewById(R.id.tvTaskDetails);
+
+            cbDone.setOnClickListener(v -> {
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onTaskChecked(((TaskListItem.TaskItem) items.get(pos)).getTask(), cbDone.isChecked());
+                }
+            });
         }
 
-        tvMeta.setText(meta.toString());
+        void bind(Task task) {
+            cbDone.setChecked(Task.STATUS_DONE.equals(task.getStatus()));
+            tvDesc.setText(task.getDescription());
 
-        cbCompleted.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            task.setStatus(isChecked ? Task.STATUS_DONE : Task.STATUS_TODO);
-            if (listener != null) listener.onStatusChanged();
-        });
+            if (cbDone.isChecked()) {
+                tvDesc.setPaintFlags(tvDesc.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+                tvDesc.setTextColor(Color.parseColor("#91A1BB"));
+            } else {
+                tvDesc.setPaintFlags(tvDesc.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+                tvDesc.setTextColor(Color.parseColor("#202C40"));
+            }
 
-        return convertView;
+            StringBuilder details = new StringBuilder();
+            details.append(task.getStatus()).append(" • ").append(task.getPriority());
+
+            if (task.getDueDateMillis() > 0) {
+                if (task.isDueToday()) {
+                    details.append(" • Due today");
+                } else {
+                    String dateStr = new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(new Date(task.getDueDateMillis()));
+                    details.append(" • ").append(dateStr);
+                    if (task.isOverdue()) {
+                        details.append(" (OVERDUE)");
+                    }
+                }
+            } else {
+                details.append(" • No due date");
+            }
+            tvDetails.setText(details.toString());
+        }
     }
 }
