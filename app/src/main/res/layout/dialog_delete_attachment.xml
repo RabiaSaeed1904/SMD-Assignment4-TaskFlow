@@ -9,20 +9,16 @@
         android:id="@+id/tvDeletePrompt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Type file name to confirm deletion:"
+        android:text="Type the filename to confirm deletion:"
         android:textColor="#202C40"
-        android:textSize="13sp" />
+        android:textSize="14sp" />
 
     <EditText
-        android:id="@+id/etConfirmAttachmentName"
+        android:id="@+id/etDeleteConfirm"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_search_field"
-        android:hint="Type attachment name..."
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:singleLine="true"
-        android:textSize="13sp" />
-
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="Filename..."
+        android:importantForAutofill="no"
+        android:inputType="text" />
 </LinearLayout>
