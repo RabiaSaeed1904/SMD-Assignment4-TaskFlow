@@ -1,70 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
     android:background="@drawable/bg_workspace_card"
     android:elevation="1dp"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="12dp">
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvAttachmentIcon"
+    <ImageView
+        android:id="@+id/ivAttachmentIcon"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="#EAF3F4"
-        android:gravity="center"
-        android:text="📄"
-        android:textSize="20sp" />
+        android:layout_marginEnd="12dp"
+        android:background="#E8F4FD"
+        android:padding="8dp"
+        android:src="@android:drawable/ic_menu_gallery"
+        app:tint="#3099F3" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvAttachmentName"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="sports-projectv2.fig"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:text="Filename"
             android:textColor="#202C40"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvAttachmentMeta"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvAttachmentDetails"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:text="Image • 2.4 MB"
+            android:text="Type • Size • Status"
             android:textColor="#91A1BB"
             android:textSize="11sp" />
     </LinearLayout>
 
-    <Button
+    <TextView
         android:id="@+id/btnAttachmentPreview"
         android:layout_width="wrap_content"
-        android:layout_height="32dp"
-        android:backgroundTint="#F1F3F6"
-        android:minWidth="0dp"
-        android:minHeight="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:background="#F7F8FA"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp"
         android:text="Preview"
-        android:textAllCaps="false"
         android:textColor="#202C40"
-        android:textSize="11sp" />
+        android:textSize="12sp"
+        android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/btnAttachmentRemove"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginStart="8dp"
-        android:gravity="center"
-        android:text="🗑"
-        android:textColor="#E67C7C"
-        android:textSize="16sp" />
-
+    <ImageView
+        android:id="@+id/ivAttachmentRemove"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@android:drawable/ic_menu_delete"
+        app:tint="#91A1BB" />
 </LinearLayout>
