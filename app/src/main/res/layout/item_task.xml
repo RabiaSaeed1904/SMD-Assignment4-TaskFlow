@@ -2,44 +2,44 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
     android:background="@drawable/bg_workspace_card"
     android:elevation="1dp"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="14dp">
+    android:padding="16dp">
 
     <CheckBox
-        android:id="@+id/cbTaskCompleted"
+        android:id="@+id/cbTaskDone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
         android:buttonTint="#3099F3" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <!-- MAX 2 LINES FOR DESCRIPTION -->
         <TextView
-            android:id="@+id/tvTaskDescription"
+            android:id="@+id/tvTaskDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="Build header layout"
+            android:text="Task description"
             android:textColor="#202C40"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvTaskMetadata"
+            android:id="@+id/tvTaskDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="To do • High • Due today"
+            android:text="Status • Priority • Due Date"
             android:textColor="#91A1BB"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
     </LinearLayout>
-
 </LinearLayout>

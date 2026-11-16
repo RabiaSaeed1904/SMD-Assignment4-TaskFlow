@@ -2,119 +2,114 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
     android:background="@drawable/bg_workspace_card"
-    android:elevation="1dp"
+    android:elevation="2dp"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- TAG -->
     <TextView
-        android:id="@+id/tvItemTag"
+        android:id="@+id/tvProjectTag"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/tag_background"
-        android:paddingStart="10dp"
-        android:paddingTop="4dp"
-        android:paddingEnd="10dp"
-        android:paddingBottom="4dp"
-        android:text="User Interface"
-        android:textColor="#694293"
+        android:background="#E8EAED"
+        android:paddingStart="8dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="2dp"
+        android:text="Tag"
+        android:textColor="#5F6368"
         android:textSize="10sp"
         android:textStyle="bold" />
 
-    <!-- PROJECT NAME -->
     <TextView
-        android:id="@+id/tvItemName"
+        android:id="@+id/tvProjectName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Service Page Website"
-        android:textColor="#182134"
+        android:layout_marginTop="8dp"
+        android:text="Project Name"
+        android:textColor="#202C40"
         android:textSize="16sp"
         android:textStyle="bold" />
 
-    <!-- DESCRIPTION (MAX 2 LINES) -->
     <TextView
-        android:id="@+id/tvItemDescription"
+        android:id="@+id/tvProjectDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="4dp"
         android:ellipsize="end"
-        android:lineSpacingExtra="2dp"
         android:maxLines="2"
         android:text="Project description goes here..."
-        android:textColor="#91A2BB"
+        android:textColor="#91A1BB"
         android:textSize="12sp" />
 
-    <!-- PROGRESS ROW -->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_marginTop="12dp">
 
         <TextView
-            android:id="@+id/tvItemTaskFraction"
-            android:layout_width="0dp"
+            android:id="@+id/tvProjectTaskProgress"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="4/12 tasks"
-            android:textColor="#7C91AF"
+            android:layout_alignParentStart="true"
+            android:drawableStart="@android:drawable/ic_menu_agenda"
+            android:drawablePadding="4dp"
+            android:text="0/0 tasks"
+            android:textColor="#91A1BB"
             android:textSize="11sp" />
 
         <TextView
-            android:id="@+id/tvItemPercentage"
+            android:id="@+id/tvProjectPercentage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="33%"
-            android:textColor="#7C91AF"
-            android:textSize="11sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:layout_alignParentEnd="true"
+            android:text="0%"
+            android:textColor="#91A1BB"
+            android:textSize="11sp" />
+    </RelativeLayout>
 
-    <!-- PROGRESS BAR -->
     <ProgressBar
-        android:id="@+id/pbItemProgress"
+        android:id="@+id/pbProjectProgress"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
         android:layout_height="6dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:max="100"
-        android:progress="33"
-        android:progressBackgroundTint="#ECEEF3"
-        android:progressTint="#3099F3" />
+        android:progress="0"
+        android:progressDrawable="@drawable/bg_progress_bar" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="12dp"
-        android:layout_marginBottom="10dp"
-        android:background="#EDF1F7" />
+        android:background="#E8EAED" />
 
-    <!-- METADATA FOOTER -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
+        android:layout_marginTop="12dp"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/tvItemAttachments"
+            android:id="@+id/tvProjectAttachmentsCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📎 4 Attachments"
-            android:textColor="#7B91AE"
-            android:textSize="10sp" />
+            android:layout_marginEnd="16dp"
+            android:drawableStart="@android:drawable/ic_menu_gallery"
+            android:drawablePadding="4dp"
+            android:text="0 Attachments"
+            android:textColor="#91A1BB"
+            android:textSize="11sp" />
 
         <TextView
-            android:id="@+id/tvItemComments"
+            android:id="@+id/tvProjectCommentsCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="14dp"
-            android:text="💬 3 Comments"
-            android:textColor="#7B91AE"
-            android:textSize="10sp" />
+            android:drawableStart="@android:drawable/ic_menu_sort_by_size"
+            android:drawablePadding="4dp"
+            android:text="0 Comments"
+            android:textColor="#91A1BB"
+            android:textSize="11sp" />
     </LinearLayout>
-
 </LinearLayout>
