@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TaskFlow</string>
+    <string name="prompt_delete_attachment">Type the filename to confirm deletion:</string>
+    <string name="hint_filename">Filename...</string>
 </resources>

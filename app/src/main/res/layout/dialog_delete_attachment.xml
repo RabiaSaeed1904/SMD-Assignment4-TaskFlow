@@ -9,7 +9,7 @@
         android:id="@+id/tvDeletePrompt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Type the filename to confirm deletion:"
+        android:text="@string/prompt_delete_attachment"
         android:textColor="#202C40"
         android:textSize="14sp" />
 
@@ -18,7 +18,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Filename..."
+        android:hint="@string/hint_filename"
         android:importantForAutofill="no"
         android:inputType="text" />
 </LinearLayout>
