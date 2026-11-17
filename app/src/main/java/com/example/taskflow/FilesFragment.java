@@ -2,6 +2,9 @@ package com.example.taskflow;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -38,7 +41,7 @@ public class FilesFragment extends Fragment {
     private Button btnEmptyAction, btnAdd;
 
     private AttachmentAdapter adapter;
-    private int selectedFilter = 0; // 0=All, 1=Images, 2=Text
+    private int selectedFilter = 0;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -98,6 +101,22 @@ public class FilesFragment extends Fragment {
                 AttachmentLink link = adapter.getAttachments().get(pos);
                 confirmTypedDeletion(link, pos);
             }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                View itemView = viewHolder.itemView;
+                ColorDrawable background = new ColorDrawable();
+
+                if (dX > 0) {
+                    background.setColor(Color.parseColor("#E74C3C"));
+                    background.setBounds(itemView.getLeft(), itemView.getTop(), itemView.getLeft() + (int) dX, itemView.getBottom());
+                } else {
+                    background.setBounds(0, 0, 0, 0);
+                }
+
+                background.draw(c);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
         };
         new ItemTouchHelper(callback).attachToRecyclerView(rvFiles);
     }
@@ -141,9 +160,6 @@ public class FilesFragment extends Fragment {
         chipImages.setText("Images (" + countImages + ")");
         chipText.setText("Text (" + countText + ")");
 
-        // Note: For compile check, we will fix bg_chip files in next step if missing,
-        // but it should use your default backgrounds for now if present.
-
         String query = etSearch.getText().toString().trim().toLowerCase(Locale.ROOT);
         List<AttachmentLink> filtered = new ArrayList<>();
 
@@ -185,7 +201,7 @@ public class FilesFragment extends Fragment {
         TextView tvPrompt = view.findViewById(R.id.tvDeletePrompt);
 
         String targetName = link.getCatalogItem().getDisplayName();
-        tvPrompt.setText("Type '" + targetName + "' to confirm deletion:");
+        tvPrompt.setText(getString(R.string.prompt_delete_attachment) + " '" + targetName + "':");
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Remove Attachment")
@@ -198,7 +214,7 @@ public class FilesFragment extends Fragment {
                         refreshUI();
                     } else {
                         Toast.makeText(requireContext(), "Name did not match. Attachment kept.", Toast.LENGTH_SHORT).show();
-                        adapter.notifyItemChanged(adapterPos); // Bounce back swipe
+                        adapter.notifyItemChanged(adapterPos);
                     }
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> adapter.notifyItemChanged(adapterPos))
@@ -217,7 +233,7 @@ public class FilesFragment extends Fragment {
             builder.setView(iv);
         } else {
             TextView tv = new TextView(requireContext());
-            tv.setText(item.getContent()); // Ensure getContent() exists in CatalogItem
+            tv.setText(item.getContent());
             tv.setPadding(48, 48, 48, 48);
             tv.setTextSize(16f);
             tv.setTextColor(getResources().getColor(android.R.color.black));

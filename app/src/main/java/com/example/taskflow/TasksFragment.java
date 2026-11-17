@@ -2,6 +2,9 @@ package com.example.taskflow;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -129,9 +132,7 @@ public class TasksFragment extends Fragment {
                 TaskListItem.TaskItem sourceItem = (TaskListItem.TaskItem) adapter.getItems().get(source.getAdapterPosition());
                 TaskListItem.TaskItem targetItem = (TaskListItem.TaskItem) adapter.getItems().get(target.getAdapterPosition());
 
-                if (getTaskGroupId(sourceItem.getTask()) != getTaskGroupId(targetItem.getTask())) {
-                    return false; // Prevent dragging across group boundaries
-                }
+                if (getTaskGroupId(sourceItem.getTask()) != getTaskGroupId(targetItem.getTask())) return false;
 
                 Collections.swap(adapter.getItems(), source.getAdapterPosition(), target.getAdapterPosition());
                 adapter.notifyItemMoved(source.getAdapterPosition(), target.getAdapterPosition());
@@ -171,6 +172,27 @@ public class TasksFragment extends Fragment {
                             .setOnCancelListener(dialog -> adapter.notifyItemChanged(position))
                             .show();
                 }
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                if (viewHolder instanceof TaskAdapter.HeaderViewHolder) return;
+
+                View itemView = viewHolder.itemView;
+                ColorDrawable background = new ColorDrawable();
+
+                if (dX > 0) {
+                    background.setColor(Color.parseColor("#E74C3C"));
+                    background.setBounds(itemView.getLeft(), itemView.getTop(), itemView.getLeft() + (int) dX, itemView.getBottom());
+                } else if (dX < 0) {
+                    background.setColor(Color.parseColor("#27AE60"));
+                    background.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                } else {
+                    background.setBounds(0, 0, 0, 0);
+                }
+
+                background.draw(c);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
         };
         new ItemTouchHelper(callback).attachToRecyclerView(rvTasks);
@@ -256,9 +278,13 @@ public class TasksFragment extends Fragment {
 
         Collections.sort(filteredTasks, (t1, t2) -> {
             switch (sortPos) {
-                case 1: return Long.compare(t2.getDueDateMillis() == 0 ? Long.MIN_VALUE : t2.getDueDateMillis(), t1.getDueDateMillis() == 0 ? Long.MIN_VALUE : t1.getDueDateMillis());
-                case 2: return Integer.compare(getPriorityRank(t2.getPriority()), getPriorityRank(t1.getPriority()));
-                case 3: return t1.getDescription().compareToIgnoreCase(t2.getDescription());
+                case 1:
+                    return Long.compare(t2.getDueDateMillis() == 0 ? Long.MIN_VALUE : t2.getDueDateMillis(),
+                            t1.getDueDateMillis() == 0 ? Long.MIN_VALUE : t1.getDueDateMillis());
+                case 2:
+                    return Integer.compare(getPriorityRank(t2.getPriority()), getPriorityRank(t1.getPriority()));
+                case 3:
+                    return t1.getDescription().compareToIgnoreCase(t2.getDescription());
                 default:
                     long d1 = t1.getDueDateMillis() == 0 ? Long.MAX_VALUE : t1.getDueDateMillis();
                     long d2 = t2.getDueDateMillis() == 0 ? Long.MAX_VALUE : t2.getDueDateMillis();
