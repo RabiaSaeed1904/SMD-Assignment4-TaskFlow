@@ -57,7 +57,7 @@ public class FilesFragment extends Fragment {
         setupList();
         setupSearchAndChips();
         setupAddButton();
-        refreshUI();
+        refreshList();
         return view;
     }
 
@@ -97,9 +97,12 @@ public class FilesFragment extends Fragment {
 
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int pos = viewHolder.getAdapterPosition();
-                AttachmentLink link = adapter.getAttachments().get(pos);
-                confirmTypedDeletion(link, pos);
+                // Fixed deprecation warning here
+                int pos = viewHolder.getBindingAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    AttachmentLink link = adapter.getAttachments().get(pos);
+                    confirmTypedDeletion(link, pos);
+                }
             }
 
             @Override
@@ -124,13 +127,13 @@ public class FilesFragment extends Fragment {
     private void setupSearchAndChips() {
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { refreshUI(); }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { refreshList(); }
             @Override public void afterTextChanged(Editable s) {}
         });
 
         View.OnClickListener chipListener = v -> {
             selectedFilter = (v.getId() == R.id.chipFileAll) ? 0 : (v.getId() == R.id.chipFileImages) ? 1 : 2;
-            refreshUI();
+            refreshList();
         };
 
         chipAll.setOnClickListener(chipListener);
@@ -144,7 +147,7 @@ public class FilesFragment extends Fragment {
         btnEmptyAction.setOnClickListener(addListener);
     }
 
-    public void refreshUI() {
+    public void refreshList() {
         if (host == null || host.getProject() == null) return;
         List<AttachmentLink> allLinks = host.getProject().getAttachments();
 
@@ -156,9 +159,10 @@ public class FilesFragment extends Fragment {
             else countText++;
         }
 
-        chipAll.setText("All (" + countAll + ")");
-        chipImages.setText("Images (" + countImages + ")");
-        chipText.setText("Text (" + countText + ")");
+        // Fixed string concatenation warnings
+        chipAll.setText(String.format(Locale.getDefault(), "All (%d)", countAll));
+        chipImages.setText(String.format(Locale.getDefault(), "Images (%d)", countImages));
+        chipText.setText(String.format(Locale.getDefault(), "Text (%d)", countText));
 
         String query = etSearch.getText().toString().trim().toLowerCase(Locale.ROOT);
         List<AttachmentLink> filtered = new ArrayList<>();
@@ -171,7 +175,9 @@ public class FilesFragment extends Fragment {
         }
 
         adapter.setAttachments(filtered);
-        tvShowingCount.setText("Showing " + filtered.size() + " of " + countAll + " attachments");
+
+        // Fixed string concatenation warning
+        tvShowingCount.setText(String.format(Locale.getDefault(), "Showing %d of %d attachments", filtered.size(), countAll));
 
         if (filtered.isEmpty()) {
             rvFiles.setVisibility(View.GONE);
@@ -185,7 +191,7 @@ public class FilesFragment extends Fragment {
                 btnEmptyAction.setOnClickListener(v -> {
                     etSearch.setText("");
                     selectedFilter = 0;
-                    refreshUI();
+                    refreshList();
                 });
             }
         } else {
@@ -201,7 +207,7 @@ public class FilesFragment extends Fragment {
         TextView tvPrompt = view.findViewById(R.id.tvDeletePrompt);
 
         String targetName = link.getCatalogItem().getDisplayName();
-        tvPrompt.setText(getString(R.string.prompt_delete_attachment) + " '" + targetName + "':");
+        tvPrompt.setText(String.format(Locale.getDefault(), "%s '%s':", getString(R.string.prompt_delete_attachment), targetName));
 
         new AlertDialog.Builder(requireContext())
                 .setTitle("Remove Attachment")
@@ -211,7 +217,7 @@ public class FilesFragment extends Fragment {
                     if (typed.equals(targetName)) {
                         host.getProject().getAttachments().remove(link);
                         if (host != null) host.notifyProjectChanged();
-                        refreshUI();
+                        refreshList();
                     } else {
                         Toast.makeText(requireContext(), "Name did not match. Attachment kept.", Toast.LENGTH_SHORT).show();
                         adapter.notifyItemChanged(adapterPos);
@@ -279,7 +285,7 @@ public class FilesFragment extends Fragment {
                     if (selected[0] != null) {
                         host.getProject().getAttachments().add(new AttachmentLink(selected[0]));
                         if (host != null) host.notifyProjectChanged();
-                        refreshUI();
+                        refreshList();
                     }
                 })
                 .create();

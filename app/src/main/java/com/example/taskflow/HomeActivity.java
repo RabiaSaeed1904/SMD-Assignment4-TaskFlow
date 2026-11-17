@@ -24,6 +24,8 @@ import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity {
 
+    public static final String EXTRA_PROJECT = "project";
+
     private RecyclerView rvProjects;
     private ProjectAdapter adapter;
     private EditText etSearch;
@@ -37,7 +39,7 @@ public class HomeActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    Project updatedProject = (Project) result.getData().getSerializableExtra("project");
+                    Project updatedProject = (Project) result.getData().getSerializableExtra(EXTRA_PROJECT);
                     if (updatedProject != null) {
                         for (int i = 0; i < allProjects.size(); i++) {
                             if (allProjects.get(i).getId().equals(updatedProject.getId())) {
@@ -55,10 +57,6 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
-        if (allProjects.isEmpty()) {
-            allProjects.addAll(SampleDataRepository.getWorkspaceProjects());
-        }
 
         initViews();
         setupRecyclerView();
@@ -148,7 +146,7 @@ public class HomeActivity extends AppCompatActivity {
                 if (tag.isEmpty() || tag.length() > 20) { etTag.setError("1-20 chars"); return; }
                 if (desc.isEmpty() || desc.length() > 500) { etDesc.setError("1-500 chars"); return; }
 
-                Project newProject = new Project(tag, name, desc);
+                Project newProject = new Project(tag, name, desc, 0);
                 if (selectedAttachment[0] != null) {
                     newProject.getAttachments().add(new AttachmentLink(selectedAttachment[0]));
                 }
@@ -165,7 +163,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void openProjectActivity(Project project) {
         Intent intent = new Intent(this, ProjectActivity.class);
-        intent.putExtra("project", project);
+        intent.putExtra(EXTRA_PROJECT, project);
         projectActivityLauncher.launch(intent);
     }
 }
