@@ -1,9 +1,11 @@
+
 package com.example.taskflow;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,267 +33,937 @@ import java.util.Locale;
 
 public class FilesFragment extends Fragment {
 
+    private static final String STATE_QUERY = "files_query";
+    private static final String STATE_FILTER = "files_filter";
+
+    private static final int FILTER_ALL = 0;
+    private static final int FILTER_IMAGES = 1;
+    private static final int FILTER_TEXT = 2;
+
     private ProjectHost host;
 
     private EditText etSearch;
-    private TextView chipAll, chipImages, chipText;
+    private TextView chipAll;
+    private TextView chipImages;
+    private TextView chipText;
     private TextView tvShowingCount;
+    private TextView tvEmptyMsg;
+
     private RecyclerView rvFiles;
     private View layoutEmpty;
-    private TextView tvEmptyMsg;
-    private Button btnEmptyAction, btnAdd;
+
+    private Button btnEmptyAction;
+    private Button btnAdd;
 
     private AttachmentAdapter adapter;
-    private int selectedFilter = 0;
+
+    private int selectedFilter = FILTER_ALL;
+
+    private AlertDialog deletionDialog;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof ProjectHost) host = (ProjectHost) context;
+
+        if (!(context instanceof ProjectHost)) {
+            throw new IllegalStateException(
+                    "FilesFragment requires ProjectHost"
+            );
+        }
+
+        host = (ProjectHost) context;
     }
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_files, container, false);
-        initViews(view);
-        setupList();
-        setupSearchAndChips();
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState
+    ) {
+        View view = inflater.inflate(
+                R.layout.fragment_files,
+                container,
+                false
+        );
+
+        initializeViews(view);
+        setupRecyclerView();
+        setupSearchAndFilters();
         setupAddButton();
+
+        if (savedInstanceState != null) {
+            selectedFilter = savedInstanceState.getInt(
+                    STATE_FILTER,
+                    FILTER_ALL
+            );
+
+            etSearch.setText(
+                    savedInstanceState.getString(
+                            STATE_QUERY,
+                            ""
+                    )
+            );
+        }
+
         refreshList();
         return view;
     }
 
-    private void initViews(View v) {
-        etSearch = v.findViewById(R.id.etSearchFiles);
-        chipAll = v.findViewById(R.id.chipFileAll);
-        chipImages = v.findViewById(R.id.chipFileImages);
-        chipText = v.findViewById(R.id.chipFileText);
-        tvShowingCount = v.findViewById(R.id.tvFilesShowingCount);
-        rvFiles = v.findViewById(R.id.rvFiles);
-        layoutEmpty = v.findViewById(R.id.layoutFilesEmpty);
-        tvEmptyMsg = v.findViewById(R.id.tvFilesEmptyMessage);
-        btnEmptyAction = v.findViewById(R.id.btnFilesEmptyAction);
-        btnAdd = v.findViewById(R.id.btnFilesAdd);
+    private void initializeViews(View view) {
+        etSearch = view.findViewById(R.id.etSearchFiles);
+        chipAll = view.findViewById(R.id.chipFileAll);
+        chipImages = view.findViewById(R.id.chipFileImages);
+        chipText = view.findViewById(R.id.chipFileText);
+        tvShowingCount = view.findViewById(
+                R.id.tvFilesShowingCount
+        );
+        rvFiles = view.findViewById(R.id.rvFiles);
+        layoutEmpty = view.findViewById(
+                R.id.layoutFilesEmpty
+        );
+        tvEmptyMsg = view.findViewById(
+                R.id.tvFilesEmptyMessage
+        );
+        btnEmptyAction = view.findViewById(
+                R.id.btnFilesEmptyAction
+        );
+        btnAdd = view.findViewById(R.id.btnFilesAdd);
     }
 
-    private void setupList() {
-        adapter = new AttachmentAdapter(new AttachmentAdapter.OnAttachmentInteractListener() {
-            @Override
-            public void onPreview(AttachmentLink link) {
-                showPreviewDialog(link.getCatalogItem());
-            }
+    private void setupRecyclerView() {
+        adapter = new AttachmentAdapter(
+                new AttachmentAdapter.OnAttachmentInteractListener() {
 
-            @Override
-            public void onDelete(AttachmentLink link, int position) {
-                confirmTypedDeletion(link, position);
-            }
-        });
-        rvFiles.setLayoutManager(new LinearLayoutManager(requireContext()));
+                    @Override
+                    public void onPreview(AttachmentLink link) {
+                        if (link != null
+                                && link.getCatalogItem() != null) {
+                            showPreviewDialog(
+                                    link.getCatalogItem()
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onDelete(
+                            AttachmentLink link,
+                            int position
+                    ) {
+                        confirmTypedDeletion(link);
+                    }
+                }
+        );
+
+        rvFiles.setLayoutManager(
+                new LinearLayoutManager(requireContext())
+        );
+
         rvFiles.setAdapter(adapter);
-
-        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                // Fixed deprecation warning here
-                int pos = viewHolder.getBindingAdapterPosition();
-                if (pos != RecyclerView.NO_POSITION) {
-                    AttachmentLink link = adapter.getAttachments().get(pos);
-                    confirmTypedDeletion(link, pos);
-                }
-            }
-
-            @Override
-            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-                View itemView = viewHolder.itemView;
-                ColorDrawable background = new ColorDrawable();
-
-                if (dX > 0) {
-                    background.setColor(Color.parseColor("#E74C3C"));
-                    background.setBounds(itemView.getLeft(), itemView.getTop(), itemView.getLeft() + (int) dX, itemView.getBottom());
-                } else {
-                    background.setBounds(0, 0, 0, 0);
-                }
-
-                background.draw(c);
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            }
-        };
-        new ItemTouchHelper(callback).attachToRecyclerView(rvFiles);
+        setupSwipeToDelete();
     }
 
-    private void setupSearchAndChips() {
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { refreshList(); }
-            @Override public void afterTextChanged(Editable s) {}
-        });
+    private void setupSwipeToDelete() {
+        ItemTouchHelper.SimpleCallback callback =
+                new ItemTouchHelper.SimpleCallback(
+                        0,
+                        ItemTouchHelper.RIGHT
+                ) {
 
-        View.OnClickListener chipListener = v -> {
-            selectedFilter = (v.getId() == R.id.chipFileAll) ? 0 : (v.getId() == R.id.chipFileImages) ? 1 : 2;
-            refreshList();
-        };
+                    @Override
+                    public boolean onMove(
+                            @NonNull RecyclerView recyclerView,
+                            @NonNull RecyclerView.ViewHolder viewHolder,
+                            @NonNull RecyclerView.ViewHolder target
+                    ) {
+                        return false;
+                    }
 
-        chipAll.setOnClickListener(chipListener);
-        chipImages.setOnClickListener(chipListener);
-        chipText.setOnClickListener(chipListener);
+                    @Override
+                    public int getSwipeDirs(
+                            @NonNull RecyclerView recyclerView,
+                            @NonNull RecyclerView.ViewHolder viewHolder
+                    ) {
+                        if (deletionDialog != null) {
+                            return 0;
+                        }
+                        return ItemTouchHelper.RIGHT;
+                    }
+
+                    @Override
+                    public void onSwiped(
+                            @NonNull RecyclerView.ViewHolder viewHolder,
+                            int direction
+                    ) {
+                        if (adapter == null) {
+                            return;
+                        }
+
+                        int position =
+                                viewHolder.getBindingAdapterPosition();
+
+                        List<AttachmentLink> visible =
+                                adapter.getAttachments();
+
+                        if (position == RecyclerView.NO_POSITION
+                                || position < 0
+                                || position >= visible.size()) {
+                            refreshList();
+                            return;
+                        }
+
+                        confirmTypedDeletion(
+                                visible.get(position)
+                        );
+                    }
+
+                    @Override
+                    public void onChildDraw(
+                            @NonNull Canvas canvas,
+                            @NonNull RecyclerView recyclerView,
+                            @NonNull RecyclerView.ViewHolder viewHolder,
+                            float dX,
+                            float dY,
+                            int actionState,
+                            boolean isCurrentlyActive
+                    ) {
+                        if (dX > 0f
+                                && actionState ==
+                                ItemTouchHelper.ACTION_STATE_SWIPE) {
+
+                            View row = viewHolder.itemView;
+
+                            ColorDrawable background =
+                                    new ColorDrawable(
+                                            Color.parseColor("#E74C3C")
+                                    );
+
+                            background.setBounds(
+                                    row.getLeft(),
+                                    row.getTop(),
+                                    row.getLeft() + Math.round(dX),
+                                    row.getBottom()
+                            );
+
+                            background.draw(canvas);
+                        }
+
+                        super.onChildDraw(
+                                canvas,
+                                recyclerView,
+                                viewHolder,
+                                dX,
+                                dY,
+                                actionState,
+                                isCurrentlyActive
+                        );
+                    }
+                };
+
+        new ItemTouchHelper(callback)
+                .attachToRecyclerView(rvFiles);
+    }
+
+    private void setupSearchAndFilters() {
+        etSearch.addTextChangedListener(
+                new TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after
+                    ) {
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count
+                    ) {
+                        refreshList();
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                    }
+                }
+        );
+
+        chipAll.setOnClickListener(
+                v -> selectFilter(FILTER_ALL)
+        );
+
+        chipImages.setOnClickListener(
+                v -> selectFilter(FILTER_IMAGES)
+        );
+
+        chipText.setOnClickListener(
+                v -> selectFilter(FILTER_TEXT)
+        );
+    }
+
+    private void selectFilter(int filter) {
+        selectedFilter = filter;
+        refreshList();
+    }
+
+    private void updateChipStyles() {
+        styleChip(
+                chipAll,
+                selectedFilter == FILTER_ALL
+        );
+
+        styleChip(
+                chipImages,
+                selectedFilter == FILTER_IMAGES
+        );
+
+        styleChip(
+                chipText,
+                selectedFilter == FILTER_TEXT
+        );
+    }
+
+    private void styleChip(
+            TextView chip,
+            boolean selected
+    ) {
+        chip.setBackgroundResource(
+                selected
+                        ? R.drawable.bg_chip_selected
+                        : R.drawable.bg_chip_unselected
+        );
+
+        chip.setTextColor(
+                selected
+                        ? Color.WHITE
+                        : Color.parseColor("#91A1BB")
+        );
+
+        chip.setTypeface(
+                null,
+                selected
+                        ? Typeface.BOLD
+                        : Typeface.NORMAL
+        );
     }
 
     private void setupAddButton() {
-        View.OnClickListener addListener = v -> showAddAttachmentDialog();
-        btnAdd.setOnClickListener(addListener);
-        btnEmptyAction.setOnClickListener(addListener);
+        btnAdd.setOnClickListener(
+                v -> showAddAttachmentDialog()
+        );
+
+        btnEmptyAction.setOnClickListener(
+                v -> showAddAttachmentDialog()
+        );
     }
 
     public void refreshList() {
-        if (host == null || host.getProject() == null) return;
-        List<AttachmentLink> allLinks = host.getProject().getAttachments();
-
-        int countAll = allLinks.size();
-        int countImages = 0;
-        int countText = 0;
-        for (AttachmentLink a : allLinks) {
-            if (a.getCatalogItem().getType() == CatalogItem.Type.IMAGE) countImages++;
-            else countText++;
+        if (host == null
+                || host.getProject() == null
+                || adapter == null
+                || etSearch == null
+                || rvFiles == null) {
+            return;
         }
 
-        // Fixed string concatenation warnings
-        chipAll.setText(String.format(Locale.getDefault(), "All (%d)", countAll));
-        chipImages.setText(String.format(Locale.getDefault(), "Images (%d)", countImages));
-        chipText.setText(String.format(Locale.getDefault(), "Text (%d)", countText));
+        List<AttachmentLink> allLinks =
+                host.getProject().getAttachments();
 
-        String query = etSearch.getText().toString().trim().toLowerCase(Locale.ROOT);
-        List<AttachmentLink> filtered = new ArrayList<>();
+        List<AttachmentLink> filtered =
+                new ArrayList<>();
 
-        for (AttachmentLink a : allLinks) {
-            if (selectedFilter == 1 && a.getCatalogItem().getType() != CatalogItem.Type.IMAGE) continue;
-            if (selectedFilter == 2 && a.getCatalogItem().getType() != CatalogItem.Type.TEXT) continue;
-            if (!query.isEmpty() && !a.getCatalogItem().getDisplayName().toLowerCase(Locale.ROOT).contains(query)) continue;
-            filtered.add(a);
+        int imageCount = 0;
+        int textCount = 0;
+
+        String query = etSearch.getText()
+                .toString()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
+        for (AttachmentLink link : allLinks) {
+            if (link == null) {
+                continue;
+            }
+
+            CatalogItem item = link.getCatalogItem();
+
+            if (item == null) {
+                continue;
+            }
+
+            if (item.getType() == CatalogItem.Type.IMAGE) {
+                imageCount++;
+            }
+
+            if (item.getType() == CatalogItem.Type.TEXT) {
+                textCount++;
+            }
+
+            if (selectedFilter == FILTER_IMAGES
+                    && item.getType()
+                    != CatalogItem.Type.IMAGE) {
+                continue;
+            }
+
+            if (selectedFilter == FILTER_TEXT
+                    && item.getType()
+                    != CatalogItem.Type.TEXT) {
+                continue;
+            }
+
+            if (!item.getDisplayName()
+                    .toLowerCase(Locale.ROOT)
+                    .contains(query)) {
+                continue;
+            }
+
+            filtered.add(link);
         }
+
+        chipAll.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "All (%d)",
+                        allLinks.size()
+                )
+        );
+
+        chipImages.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "Images (%d)",
+                        imageCount
+                )
+        );
+
+        chipText.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "Text (%d)",
+                        textCount
+                )
+        );
+
+        updateChipStyles();
+
+        tvShowingCount.setText(
+                String.format(
+                        Locale.getDefault(),
+                        "Showing %d of %d attachments",
+                        filtered.size(),
+                        allLinks.size()
+                )
+        );
 
         adapter.setAttachments(filtered);
 
-        // Fixed string concatenation warning
-        tvShowingCount.setText(String.format(Locale.getDefault(), "Showing %d of %d attachments", filtered.size(), countAll));
+        boolean hasMatches = !filtered.isEmpty();
 
-        if (filtered.isEmpty()) {
-            rvFiles.setVisibility(View.GONE);
-            layoutEmpty.setVisibility(View.VISIBLE);
+        rvFiles.setVisibility(
+                hasMatches ? View.VISIBLE : View.GONE
+        );
+
+        layoutEmpty.setVisibility(
+                hasMatches ? View.GONE : View.VISIBLE
+        );
+
+        if (!hasMatches) {
             if (allLinks.isEmpty()) {
-                tvEmptyMsg.setText("No attachments yet");
-                btnEmptyAction.setText("+ Add Attachment");
+                tvEmptyMsg.setText(
+                        "No attachments yet"
+                );
+
+                btnEmptyAction.setText(
+                        "+ Add Attachment"
+                );
+
+                btnEmptyAction.setOnClickListener(
+                        v -> showAddAttachmentDialog()
+                );
+
             } else {
-                tvEmptyMsg.setText("No attachments match search");
-                btnEmptyAction.setText("Reset Filters");
-                btnEmptyAction.setOnClickListener(v -> {
-                    etSearch.setText("");
-                    selectedFilter = 0;
-                    refreshList();
-                });
+                tvEmptyMsg.setText(
+                        "No attachments match your search or type"
+                );
+
+                btnEmptyAction.setText(
+                        "Reset Filters"
+                );
+
+                btnEmptyAction.setOnClickListener(
+                        v -> resetFilters()
+                );
             }
-        } else {
-            rvFiles.setVisibility(View.VISIBLE);
-            layoutEmpty.setVisibility(View.GONE);
-            btnEmptyAction.setOnClickListener(v -> showAddAttachmentDialog());
         }
     }
 
-    private void confirmTypedDeletion(AttachmentLink link, int adapterPos) {
-        View view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_delete_attachment, null);
-        EditText etConfirm = view.findViewById(R.id.etDeleteConfirm);
-        TextView tvPrompt = view.findViewById(R.id.tvDeletePrompt);
+    private void resetFilters() {
+        selectedFilter = FILTER_ALL;
+        etSearch.setText("");
+        refreshList();
+    }
 
-        String targetName = link.getCatalogItem().getDisplayName();
-        tvPrompt.setText(String.format(Locale.getDefault(), "%s '%s':", getString(R.string.prompt_delete_attachment), targetName));
+    private boolean sameAttachment(
+            AttachmentLink first,
+            AttachmentLink second
+    ) {
+        if (first == second) {
+            return true;
+        }
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Remove Attachment")
-                .setView(view)
-                .setPositiveButton("Remove", (dialog, which) -> {
-                    String typed = etConfirm.getText().toString().trim();
-                    if (typed.equals(targetName)) {
-                        host.getProject().getAttachments().remove(link);
-                        if (host != null) host.notifyProjectChanged();
-                        refreshList();
-                    } else {
-                        Toast.makeText(requireContext(), "Name did not match. Attachment kept.", Toast.LENGTH_SHORT).show();
-                        adapter.notifyItemChanged(adapterPos);
+        if (first == null || second == null) {
+            return false;
+        }
+
+        String firstId = first.getId();
+        String secondId = second.getId();
+
+        return firstId != null
+                && firstId.equals(secondId);
+    }
+
+    private void restoreSwipedRow(
+            AttachmentLink link
+    ) {
+        if (adapter == null) {
+            return;
+        }
+
+        List<AttachmentLink> visible =
+                adapter.getAttachments();
+
+        for (int i = 0; i < visible.size(); i++) {
+            if (sameAttachment(visible.get(i), link)) {
+                adapter.notifyItemChanged(i);
+                return;
+            }
+        }
+
+        refreshList();
+    }
+
+    private void confirmTypedDeletion(
+            AttachmentLink link
+    ) {
+        if (link == null
+                || link.getCatalogItem() == null
+                || !isAdded()) {
+            return;
+        }
+
+        if (deletionDialog != null) {
+            restoreSwipedRow(link);
+            return;
+        }
+
+        View dialogView =
+                LayoutInflater.from(requireContext())
+                        .inflate(
+                                R.layout.dialog_delete_attachment,
+                                null
+                        );
+
+        EditText etConfirm =
+                dialogView.findViewById(
+                        R.id.etDeleteConfirm
+                );
+
+        TextView tvPrompt =
+                dialogView.findViewById(
+                        R.id.tvDeletePrompt
+                );
+
+        String targetName =
+                link.getCatalogItem().getDisplayName();
+
+        tvPrompt.setText(
+                "Type \"" + targetName
+                        + "\" to confirm removing this attachment."
+        );
+
+        AlertDialog dialog =
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Remove Attachment")
+                        .setView(dialogView)
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Remove", null)
+                        .create();
+
+        final boolean[] deleted = {false};
+
+        deletionDialog = dialog;
+
+        dialog.setOnShowListener(
+                ignored -> {
+                    Button removeButton =
+                            dialog.getButton(
+                                    AlertDialog.BUTTON_POSITIVE
+                            );
+
+                    removeButton.setOnClickListener(v -> {
+                        String typedName =
+                                etConfirm.getText().toString();
+
+                        if (!targetName.equals(typedName)) {
+                            Toast.makeText(
+                                    requireContext(),
+                                    "Name did not match. Attachment kept.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            dialog.dismiss();
+                            return;
+                        }
+
+                        Project project =
+                                host == null
+                                        ? null
+                                        : host.getProject();
+
+                        if (project != null) {
+                            List<AttachmentLink> links =
+                                    project.getAttachments();
+
+                            for (int i = 0; i < links.size(); i++) {
+                                if (sameAttachment(
+                                        links.get(i),
+                                        link
+                                )) {
+                                    links.remove(i);
+                                    deleted[0] = true;
+                                    host.notifyProjectChanged();
+                                    break;
+                                }
+                            }
+                        }
+
+                        dialog.dismiss();
+                    });
+                }
+        );
+
+        dialog.setOnDismissListener(
+                ignored -> {
+                    if (deletionDialog == dialog) {
+                        deletionDialog = null;
                     }
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> adapter.notifyItemChanged(adapterPos))
-                .setOnCancelListener(dialog -> adapter.notifyItemChanged(adapterPos))
-                .show();
+
+                    if (!deleted[0]) {
+                        restoreSwipedRow(link);
+                    }
+                }
+        );
+
+        dialog.show();
     }
 
-    private void showPreviewDialog(CatalogItem item) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        builder.setTitle(item.getDisplayName());
-
-        if (item.getType() == CatalogItem.Type.IMAGE) {
-            ImageView iv = new ImageView(requireContext());
-            iv.setImageResource(android.R.drawable.ic_menu_gallery);
-            iv.setPadding(32, 32, 32, 32);
-            builder.setView(iv);
-        } else {
-            TextView tv = new TextView(requireContext());
-            tv.setText(item.getContent());
-            tv.setPadding(48, 48, 48, 48);
-            tv.setTextSize(16f);
-            tv.setTextColor(getResources().getColor(android.R.color.black));
-            builder.setView(tv);
+    private void showPreviewDialog(
+            CatalogItem item
+    ) {
+        if (item == null || !isAdded()) {
+            return;
         }
 
-        builder.setPositiveButton("Close", null).show();
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(requireContext())
+                        .setTitle(item.getDisplayName())
+                        .setPositiveButton("Close", null);
+
+        if (item.getType()
+                == CatalogItem.Type.IMAGE) {
+
+            int imageResource =
+                    item.getImageDrawableRes();
+
+            if (imageResource == 0) {
+                builder.setMessage(
+                        "Image preview unavailable."
+                );
+            } else {
+                ImageView image =
+                        new ImageView(requireContext());
+
+                image.setImageResource(imageResource);
+
+                image.setScaleType(
+                        ImageView.ScaleType.FIT_CENTER
+                );
+
+                image.setAdjustViewBounds(true);
+
+                int padding = dpToPx(16);
+
+                image.setPadding(
+                        padding,
+                        padding,
+                        padding,
+                        padding
+                );
+
+                image.setMinimumHeight(dpToPx(220));
+
+                builder.setView(image);
+            }
+
+        } else {
+            String content = item.getTextContent();
+
+            TextView text =
+                    new TextView(requireContext());
+
+            text.setText(
+                    content == null || content.isEmpty()
+                            ? "No document content available."
+                            : content
+            );
+
+            text.setTextColor(
+                    Color.parseColor("#202C40")
+            );
+
+            text.setTextSize(15f);
+            text.setTextIsSelectable(true);
+
+            int padding = dpToPx(16);
+
+            text.setPadding(
+                    padding,
+                    padding,
+                    padding,
+                    padding
+            );
+
+            ScrollView scroll =
+                    new ScrollView(requireContext());
+
+            scroll.addView(text);
+            builder.setView(scroll);
+        }
+
+        builder.show();
     }
 
+    /**
+     * Allows adding multiple catalog attachments
+     * to the current project in one operation.
+     *
+     * Existing attachments are excluded.
+     * Cancel makes no changes.
+     */
     private void showAddAttachmentDialog() {
-        List<CatalogItem> catalog = SampleDataRepository.getLocalCatalog();
-        List<CatalogItem> eligible = new ArrayList<>();
+        if (!isAdded()
+                || host == null
+                || host.getProject() == null) {
+            return;
+        }
 
-        for (CatalogItem c : catalog) {
+        List<CatalogItem> available =
+                new ArrayList<>();
+
+        List<AttachmentLink> linked =
+                host.getProject().getAttachments();
+
+        for (CatalogItem candidate :
+                SampleDataRepository.getLocalCatalog()) {
+
             boolean alreadyLinked = false;
-            for (AttachmentLink a : host.getProject().getAttachments()) {
-                if (a.getCatalogItem().getId().equals(c.getId())) {
+
+            for (AttachmentLink link : linked) {
+                if (link == null) {
+                    continue;
+                }
+
+                CatalogItem item =
+                        link.getCatalogItem();
+
+                if (item != null
+                        && candidate.getId().equals(item.getId())) {
                     alreadyLinked = true;
                     break;
                 }
             }
-            if (!alreadyLinked) eligible.add(c);
+
+            if (!alreadyLinked) {
+                available.add(candidate);
+            }
         }
 
-        if (eligible.isEmpty()) {
-            Toast.makeText(requireContext(), "All catalog files are already attached", Toast.LENGTH_SHORT).show();
+        if (available.isEmpty()) {
+            Toast.makeText(
+                    requireContext(),
+                    "All catalog files are already attached",
+                    Toast.LENGTH_SHORT
+            ).show();
             return;
         }
 
-        String[] names = new String[eligible.size()];
-        for(int i=0; i<eligible.size(); i++) names[i] = eligible.get(i).getDisplayName();
+        String[] names =
+                new String[available.size()];
 
-        final CatalogItem[] selected = {null};
+        boolean[] checked =
+                new boolean[available.size()];
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                .setTitle("Select Attachment")
-                .setSingleChoiceItems(names, -1, (d, which) -> {
-                    selected[0] = eligible.get(which);
-                    ((AlertDialog)d).getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                })
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Add", (d, which) -> {
-                    if (selected[0] != null) {
-                        host.getProject().getAttachments().add(new AttachmentLink(selected[0]));
-                        if (host != null) host.notifyProjectChanged();
-                        refreshList();
-                    }
-                })
-                .create();
+        for (int i = 0; i < available.size(); i++) {
+            names[i] =
+                    available.get(i).getDisplayName();
+        }
 
-        dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false));
+        AlertDialog dialog =
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Select Attachments")
+                        .setMultiChoiceItems(
+                                names,
+                                checked,
+                                (d, index, isChecked) -> {
+                                    checked[index] = isChecked;
+                                }
+                        )
+                        .setNegativeButton(
+                                "Cancel",
+                                null
+                        )
+                        .setPositiveButton(
+                                "Add Selected",
+                                null
+                        )
+                        .create();
+
+        dialog.setOnShowListener(
+                ignored -> {
+                    Button addButton =
+                            dialog.getButton(
+                                    AlertDialog.BUTTON_POSITIVE
+                            );
+
+                    addButton.setOnClickListener(v -> {
+                        Project project =
+                                host == null
+                                        ? null
+                                        : host.getProject();
+
+                        if (project == null || !isAdded()) {
+                            dialog.dismiss();
+                            return;
+                        }
+
+                        List<AttachmentLink> currentLinks =
+                                project.getAttachments();
+
+                        int addedCount = 0;
+
+                        for (int i = 0; i < available.size(); i++) {
+                            if (!checked[i]) {
+                                continue;
+                            }
+
+                            CatalogItem candidate =
+                                    available.get(i);
+
+                            boolean duplicate = false;
+
+                            // Recheck against the live project list
+                            // before adding each attachment.
+                            for (AttachmentLink link : currentLinks) {
+                                if (link == null
+                                        || link.getCatalogItem() == null) {
+                                    continue;
+                                }
+
+                                if (candidate.getId().equals(
+                                        link.getCatalogItem().getId()
+                                )) {
+                                    duplicate = true;
+                                    break;
+                                }
+                            }
+
+                            if (!duplicate) {
+                                currentLinks.add(
+                                        new AttachmentLink(candidate)
+                                );
+                                addedCount++;
+                            }
+                        }
+
+                        if (addedCount > 0) {
+                            host.notifyProjectChanged();
+
+                            Toast.makeText(
+                                    requireContext(),
+                                    addedCount
+                                            + " attachment(s) added",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            dialog.dismiss();
+                        } else {
+                            Toast.makeText(
+                                    requireContext(),
+                                    "Select at least one available attachment",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    });
+                }
+        );
+
         dialog.show();
+    }
+
+    private int dpToPx(int dp) {
+        return Math.round(
+                dp * getResources()
+                        .getDisplayMetrics()
+                        .density
+        );
+    }
+
+    @Override
+    public void onSaveInstanceState(
+            @NonNull Bundle outState
+    ) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(
+                STATE_FILTER,
+                selectedFilter
+        );
+
+        if (etSearch != null) {
+            outState.putString(
+                    STATE_QUERY,
+                    etSearch.getText().toString()
+            );
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (deletionDialog != null) {
+            AlertDialog dialog = deletionDialog;
+            deletionDialog = null;
+            dialog.dismiss();
+        }
+
+        if (rvFiles != null) {
+            rvFiles.setAdapter(null);
+        }
+
+        adapter = null;
+        rvFiles = null;
+        etSearch = null;
+
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onDetach() {
+        host = null;
+        super.onDetach();
     }
 }
